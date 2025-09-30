@@ -1,0 +1,23 @@
+# Ignore Python virtual environment
+venv/
+ENV/
+env/
+
+# Ignore Jupyter notebook assignment
+Git_Assignment.ipynb
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+
+# VS Code settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python packages
+*.egg-info/
+dist/
+build/
