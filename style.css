@@ -146,3 +146,59 @@ body {
     display: none;
   }
 }
+
+/* Followers / Following Section */
+.followers-container {
+  max-width: 600px;
+  margin: 20px auto;
+  background: #fff;
+  border: 1px solid #dbdbdb;
+  border-radius: 5px;
+  padding: 20px;
+}
+
+.followers-box {
+  margin-bottom: 30px;
+}
+
+.followers-box h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-info img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.user-info span {
+  font-weight: bold;
+}
+
+.btn {
+  background: none;
+  border: none;
+  color: #0095f6;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn.unfollow {
+  color: #262626;
+}
