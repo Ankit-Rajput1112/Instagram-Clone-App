@@ -1,0 +1,148 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #fafafa;
+  color: #262626;
+}
+
+/* Navbar */
+.navbar {
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #dbdbdb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-container {
+  max-width: 975px;
+  margin: auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: 'Segoe UI', cursive;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.search-bar {
+  padding: 5px 10px;
+  border: 1px solid #dbdbdb;
+  border-radius: 3px;
+  width: 200px;
+  text-align: center;
+}
+
+.nav-icons span {
+  margin-left: 15px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Layout */
+.main-container {
+  display: flex;
+  max-width: 975px;
+  margin: 20px auto;
+  gap: 20px;
+}
+
+.feed {
+  flex: 2;
+}
+
+.sidebar {
+  flex: 1;
+  position: sticky;
+  top: 70px;
+}
+
+/* Post */
+.post {
+  background: #fff;
+  border: 1px solid #dbdbdb;
+  margin-bottom: 20px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.post-header img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.post-img {
+  width: 100%;
+  display: block;
+}
+
+.post-actions {
+  padding: 10px;
+  font-size: 20px;
+}
+
+.post p {
+  padding: 0 10px 10px;
+  font-size: 14px;
+}
+
+/* Sidebar */
+.profile {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile img {
+  width: 50px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.suggestion img {
+  width: 35px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.suggestion button {
+  border: none;
+  background: none;
+  color: #0095f6;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+  }
+  .sidebar {
+    display: none;
+  }
+}
