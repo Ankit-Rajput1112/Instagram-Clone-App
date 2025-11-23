@@ -1,204 +1,173 @@
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Instagram Clone</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo"><a href="{{ url_for('index') }}" style="text-decoration:none;color:inherit;">Instagram</a></div>
 
-body {
-  background: #fafafa;
-  color: #262626;
-}
+      <div class="nav-icons" aria-hidden="true">
+        <a title="Messages" href="{{ url_for('messages_index') }}" class="nav-link">💬</a>
+        <a title="New post" href="{{ url_for('post') }}" class="nav-link">➕</a>
 
-/* Navbar */
-.navbar {
-  width: 100%;
-  background: #fff;
-  border-bottom: 1px solid #dbdbdb;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
+        {% if user %}
+          <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+          <a href="{{ url_for('register') }}" class="nav-link">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
 
-.nav-container {
-  max-width: 975px;
-  margin: auto;
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+  <!-- Main Layout -->
+  <main class="main-container">
+    <!-- Feed Section -->
+    <section class="feed">
+      {% if posts and posts|length > 0 %}
+        {% for p in posts %}
+          <div class="post" style="position:relative;">
+            <!-- POST HEADER -->
+            <div class="post-header" style="display:flex;align-items:center;padding:10px;">
+              <!-- owner avatar -->
+              <!-- avatar wrap (post header) -->
+              <span class="avatar-wrap" style="width:44px;height:44px;margin-right:12px;display:inline-block;">
+                <img src="{{ url_for('uploaded_file', filename='avatars/' ~ p.username ~ '.png') }}"
+                       alt="{{ p.username }}"
+                       class="profile-thumb"
+                       onerror="this.onerror=null;this.style.display='none'; this.parentElement.querySelector('.initial-avatar').style.display='inline-flex';">
 
-.logo {
-  font-family: 'Segoe UI', cursive;
-  font-size: 24px;
-  font-weight: bold;
-}
+                <!-- fallback initial -->
+                <span class="initial-avatar md" style="display:none; background: {{ ['#E57373','#F06292','#BA68C8','#9575CD','#64B5F6','#4DB6AC','#81C784','#FFD54F','#FF8A65','#A1887F'][(p.username|length) % 10] }}">
+                  {{ (p.username[:1] if p.username else 'U')|upper }}
+                </span>
+              </span>
 
-.search-bar {
-  padding: 5px 10px;
-  border: 1px solid #dbdbdb;
-  border-radius: 3px;
-  width: 200px;
-  text-align: center;
-}
+              <!-- username -->
+              <div style="display:flex;flex-direction:column;">
+                <span class="username" style="font-weight:600;">{{ p.username }}</span>
+                <small style="color:#777;font-size:12px;">{{ p.created_at }}</small>
+              </div>
+            
+              <!-- delete button (post owner only) -->
+              {% if user and user.id == p.user_id %}
+                <form method="post"
+                      action="{{ url_for('delete_post', post_id=p.id) }}"
+                      style="margin-left:auto;">
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  <button type="submit" style="background:none;border:none;color:#d00;font-size:14px;cursor:pointer;">
+                    Delete
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          
+            <!-- POST IMAGE -->
+            <img src="{{ url_for('uploaded_file', filename=p.image_path) }}" class="post-img" alt="post image" style="width:100%;display:block;">
+          
+            <!-- ACTIONS (like + comment count) -->
+            <div class="post-actions" style="display:flex;align-items:center;padding:10px;">
+              <!-- Like form -->
+              <form method="post" action="{{ url_for('toggle_post_like_form', post_id=p.id) }}" style="display:inline;">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="like-btn" style="border:1px solid #ddd;padding:6px;border-radius:6px;cursor:pointer;">
+                  <span class="heart">{% if p.liked_by_me %}❤️{% else %}🤍{% endif %}</span>
+                </button>
+              </form>
+            
+              <span class="like-count" style="font-weight:600;margin-left:8px;margin-right:14px;">{{ p.like_count }}</span>
+            
+              <!-- Comment page link -->
+              <a class="comment-btn" href="{{ url_for('post_comments_page', post_id=p.id) }}" style="margin-left:6px;text-decoration:none;font-size:18px;">💬</a>
+              <span class="comment-count" style="margin-left:6px;color:#666;">{{ p.comment_count }}</span>
+            </div>
+          
+            <!-- CAPTION -->
+            <p class="post-caption" style="padding:0 10px 10px;"><b>{{ p.username }}</b> {{ p.caption or '' }}</p>
+          
+            <!-- INLINE COMMENTS -->
+            <div style="padding:0 10px 12px;">
+              {% for c in get_comments_list(p.id) %}
+                <div class="comment-row" style="display:flex;align-items:flex-start;position:relative;margin-bottom:10px;background:#fafafa;padding:8px;border-radius:6px;">
+                  <!-- commenter avatar -->
+                  <!-- avatar wrap (commenter) -->
+                  <span class="avatar-wrap" style="width:36px;height:36px;margin-right:10px;display:inline-block;">
+                    <img src="{{ url_for('uploaded_file', filename='avatars/' ~ c.username ~ '.png') }}"
+                         alt="{{ c.username }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;"
+                         onerror="this.onerror=null;this.style.display='none'; this.parentElement.querySelector('.initial-avatar').style.display='inline-flex';">
 
-.nav-icons span {
-  margin-left: 15px;
-  font-size: 20px;
-  cursor: pointer;
-}
+                    <span class="initial-avatar sm" style="display:none; background: {{ ['#E57373','#F06292','#BA68C8','#9575CD','#64B5F6','#4DB6AC','#81C784','#FFD54F','#FF8A65','#A1887F'][(c.username|length) % 10] }}">
+                      {{ (c.username[:1] if c.username else 'U')|upper }}
+                    </span>
+                  </span>
 
-/* Layout */
-.main-container {
-  display: flex;
-  max-width: 975px;
-  margin: 20px auto;
-  gap: 20px;
-}
 
-.feed {
-  flex: 2;
-}
+                  <div style="flex:1;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <strong style="font-size:13px;">{{ c.username }}</strong>
+                      <small style="color:#777;font-size:12px;">· {{ c.created_at }}</small>
+                    </div>
+                    <div style="margin-top:6px;font-size:13px;color:#333;">{{ c.text }}</div>
+                  </div>
+                
+                  {% if user and (user.id == c.user_id or user.id == p.user_id) %}
+                    <form method="post" action="{{ url_for('delete_comment', post_id=p.id, comment_id=c.id) }}" style="position:absolute; right:8px; top:8px;">
+                      <button type="submit" style="background:none;border:none;color:#c00;cursor:pointer;">Delete</button>
+                    </form>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
 
-.sidebar {
-  flex: 1;
-  position: sticky;
-  top: 70px;
-}
+      {% else %}
+        <p style="padding:12px;background:#fff;border:1px solid #eee;border-radius:6px;">No posts yet — be the first to post!</p>
+      {% endif %}
+    </section>
 
-/* Post */
-.post {
-  background: #fff;
-  border: 1px solid #dbdbdb;
-  margin-bottom: 20px;
-}
+    <!-- Sidebar Section -->
+    <aside class="sidebar">
+      <div class="profile">
+        <!-- FIXED: use logged-in user (if any) instead of p.username (p is only defined in loop) -->
+        <span class="avatar-wrap" style="width:56px;height:56px;margin-right:10px;display:inline-block;">
+          <img src="{% if user %}{{ url_for('uploaded_file', filename='avatars/' ~ user.username ~ '.png') }}{% else %}{{ url_for('static', filename='default_profile.png') }}{% endif %}"
+                 alt="{{ user.username if user else 'Guest' }}"
+                 class="sidebar-thumb"
+                 onerror="this.onerror=null;this.style.display='none'; this.parentElement.querySelector('.initial-avatar').style.display='inline-flex';">
 
-.post-header {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-}
+          <span class="initial-avatar" style="display:none; background: {{ ['#E57373','#F06292','#BA68C8','#9575CD','#64B5F6','#4DB6AC','#81C784','#FFD54F','#FF8A65','#A1887F'][(user.username|length if user else 0) % 10] }}">
+            {{ (user.username[:1] if user else 'G')|upper }}
+          </span>
+        </span>
 
-.post-header img {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
+        <div>
+          <b>{{ user.username if user else 'Guest' }}</b>
+          <p style="font-size:13px;color:#666;margin-top:4px;">{{ user.username if user else 'Welcome to InstaClone' }}</p>
+        </div>
+      </div>
+    </aside>
+  </main>
 
-.post-img {
-  width: 100%;
-  display: block;
-}
-
-.post-actions {
-  padding: 10px;
-  font-size: 20px;
-}
-
-.post p {
-  padding: 0 10px 10px;
-  font-size: 14px;
-}
-
-/* Sidebar */
-.profile {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.profile img {
-  width: 50px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-.suggestion {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 10px 0;
-}
-
-.suggestion img {
-  width: 35px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-.suggestion button {
-  border: none;
-  background: none;
-  color: #0095f6;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* Responsive */
-@media screen and (max-width: 768px) {
-  .main-container {
-    flex-direction: column;
-  }
-  .sidebar {
-    display: none;
-  }
-}
-
-/* Followers / Following Section */
-.followers-container {
-  max-width: 600px;
-  margin: 20px auto;
-  background: #fff;
-  border: 1px solid #dbdbdb;
-  border-radius: 5px;
-  padding: 20px;
-}
-
-.followers-box {
-  margin-bottom: 30px;
-}
-
-.followers-box h2 {
-  font-size: 18px;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 5px;
-}
-
-.user-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 12px 0;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-info img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-.user-info span {
-  font-weight: bold;
-}
-
-.btn {
-  background: none;
-  border: none;
-  color: #0095f6;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.btn.unfollow {
-  color: #262626;
-}
+  <script>
+    // like button: send POST to /like/<id>
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.classList.contains('like-btn')){
+        const id = e.target.dataset.post;
+        fetch('/like/' + id, { method: 'POST' })
+          .then(r => r.json())
+          .then(j => {
+            if (j.success) location.reload();
+            else if (j.error) alert(j.error);
+          }).catch(()=>alert('Network error'));
+      }
+    });
+  </script>
+</body>
+</html>
