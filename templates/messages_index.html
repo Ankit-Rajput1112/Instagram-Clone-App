@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Messages - InstaClone</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      background: #fafafa;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .messages-wrapper {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 26px;
+      color: #222;
+      font-weight: 600;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 15px;
+      text-decoration: none;
+      color: #0095f6;
+      font-weight: bold;
+    }
+
+    .conversation-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      background: #fff;
+      margin-bottom: 12px;
+      transition: 0.2s;
+    }
+
+    .conversation-card:hover {
+      background: #f9f9f9;
+      transform: translateY(-2px);
+    }
+
+    .conversation-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .conversation-left img {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .conversation-username {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 2px;
+    }
+
+    .last-message {
+      font-size: 13px;
+      color: #777;
+    }
+
+    .open-btn {
+      text-decoration: none;
+      background: #0095f6;
+      padding: 7px 12px;
+      color: #fff;
+      font-size: 13px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="messages-wrapper">
+
+    <a href="{{ url_for('index') }}" class="back-link">← Back to feed</a>
+
+    <h2>Messages</h2>
+
+    {% for c in conversations %}
+      <div class="conversation-card">
+        
+        <div class="conversation-left">
+          <span class="avatar-wrap" style="width:46px;height:46px;display:inline-block;">
+            <img src="{{ url_for('uploaded_file', filename='avatars/' ~ c.username ~ '.png') }}"
+                 alt="{{ c.username }}" class="profile-thumb"
+                 onerror="this.style.display='none'; this.parentElement.querySelector('.initial-avatar').style.display='inline-flex';">
+            <span class="initial-avatar" style="display:none;">{{ (c.username[:1] if c.username else 'U')|upper }}</span>
+          </span>
+
+          <div>
+            <div class="conversation-username">{{ c.username }}</div>
+
+            {% if c.last_text %}
+              <div class="last-message">{{ c.last_text[:40] }}{% if c.last_text|length > 40 %}...{% endif %}</div>
+            {% else %}
+              <div class="last-message">No messages yet</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <a href="{{ url_for('messages_thread', other_id=c.id) }}" class="open-btn">Open</a>
+      </div>
+
+    {% else %}
+      <p style="color:#777; margin-top:20px;">No conversations yet.</p>
+    {% endfor %}
+  </div>
+
+</body>
+</html>
