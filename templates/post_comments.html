@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Comments — Post {{ post.id }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .container { max-width:800px; margin:24px auto; padding:12px; }
+    .post-card { background:#fff;border:1px solid #eaeaea;border-radius:8px;padding:12px;margin-bottom:16px; }
+    .comments { background:#fff;border:1px solid #eaeaea;border-radius:8px;padding:12px; }
+    .comment-item { padding:8px;border-bottom:1px solid #f0f0f0; position:relative; }
+    .meta { color:#666;font-size:13px;margin-top:6px; }
+    .action-form { display:inline-block; margin-right:8px; }
+    .delete-btn { background:none;border:none;color:#c00;cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p><a href="{{ url_for('index') }}">&larr; Back to feed</a></p>
+
+    <div class="post-card">
+      <div><strong>{{ post.username }}</strong> · <span class="meta">{{ post.created_at }}</span></div>
+      <div style="margin-top:8px;">
+        <img src="{{ url_for('uploaded_file', filename=post.image_path) }}" alt="post image" style="width:100%;max-height:480px;object-fit:cover;border-radius:6px;">
+      </div>
+      <div style="margin-top:10px;">
+        <!-- Like form -->
+        <form method="post" action="{{ url_for('toggle_post_like_form', post_id=post.id) }}" class="action-form" style="display:inline;">
+          <input type="hidden" name="next" value="{{ url_for('post_comments_page', post_id=post.id) }}">
+          <button type="submit" style="border:1px solid #ddd;padding:6px;border-radius:6px;cursor:pointer;">
+            {% if liked_by_me %}<span class="heart">❤️</span>{% else %}<span class="heart">🤍</span>{% endif %}
+          </button>
+        </form>
+        <span style="font-weight:600;margin-left:8px;">{{ like_count }}</span>
+
+        <span style="margin-left:18px;color:#666;">{{ comment_count }} comments</span>
+      </div>
+
+      <div style="margin-top:10px;">{{ post.caption }}</div>
+    </div>
+
+    <div class="comments">
+      <h3>Comments</h3>
+
+      {% if comments %}
+        {% for c in comments %}
+          <div class="comment-item">
+            <span class="avatar-wrap" style="width:36px;height:36px;display:inline-block;margin-right:8px;">
+              <img src="{{ url_for('uploaded_file', filename='avatars/' ~ c.username ~ '.png') }}"
+                   alt="{{ c.username }}"
+                   onerror="this.style.display='none'; this.parentElement.querySelector('.initial-avatar').style.display='inline-flex';">
+              <span class="initial-avatar sm" style="display:none;">{{ (c.username[:1] if c.username else 'U')|upper }}</span>
+            </span>
+
+            <strong>{{ c.username }}</strong> <small style="color:#777">· {{ c.created_at }}</small>
+            <div style="margin-top:6px;">{{ c.text }}</div>
+
+            {% if user and (user.id == c.user_id or user.id == post.user_id) %}
+              <form method="post"
+                    action="{{ url_for('delete_comment', post_id=post.id, comment_id=c.id) }}"
+                    style="position:absolute; right:8px; top:8px;">
+                <!-- optional hidden next: keeps you on same page after delete -->
+                <input type="hidden" name="next" value="{{ url_for('post_comments_page', post_id=post.id) }}">
+                <button type="submit" class="delete-btn">Delete</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <div style="color:#666;padding:8px;">No comments yet. Be the first!</div>
+      {% endif %}
+
+    
+
+
+      
+      <div style="margin-top:12px;">
+        {% if user %}
+          <form method="post" action="{{ url_for('post_comments_page', post_id=post.id) }}">
+            <textarea name="text" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px" required></textarea>
+            <button type="submit" style="margin-top:8px;padding:8px 12px;background:#0095f6;color:#fff;border:none;border-radius:6px;cursor:pointer">Post comment</button>
+          </form>
+        {% else %}
+          <p><a href="{{ url_for('login') }}">Login</a> to post a comment.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
