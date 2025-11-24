@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(__file__)
 DB_PATH = os.path.join(BASE_DIR, 'instaclone.db')
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 ALLOWED_EXT = {'png', 'jpg', 'jpeg', 'gif'}
-
+3
 app = Flask(__name__)
 app.config.update(SECRET_KEY='dev-secret-key-change-me', UPLOAD_FOLDER=UPLOAD_FOLDER, MAX_CONTENT_LENGTH=8*1024*1024)
 
@@ -115,10 +115,6 @@ def get_like_count(message_id):
     row = db.execute('SELECT COUNT(*) AS cnt FROM message_likes WHERE message_id = ?', (message_id,)).fetchone()
     return row['cnt'] if row else 0
 
-def get_comment_count(message_id):
-    db = get_db()
-    row = db.execute('SELECT COUNT(*) AS cnt FROM message_comments WHERE message_id = ?', (message_id,)).fetchone()
-    return row['cnt'] if row else 0
 
 def get_comments_list(post_id):
     """Return list of comment rows for a post (each row has id, user_id, text, created_at, username)."""
@@ -137,6 +133,7 @@ def get_comments_list(post_id):
 def utility_processor():
     return {
         'get_comments_list': get_comments_list
+        # you can also add other helpers here if needed
     }
 # --------------------------------------------------------------
 
@@ -198,22 +195,6 @@ def like_message_server(other_id, message_id):
     # redirect back to conversation view
     return redirect(url_for('messages_thread', other_id=other_id))
 
-# Add comment to a message (server-side)
-@app.route('/messages/<int:other_id>/comment/<int:message_id>', methods=('POST',))
-def add_comment_server(other_id, message_id):
-    user = current_user()
-    if not user:
-        flash('Login required')
-        return redirect(url_for('login'))
-    text = request.form.get('comment_text','').strip()
-    if not text:
-        flash('Cannot send empty comment')
-        return redirect(url_for('messages_thread', other_id=other_id))
-    db = get_db()
-    db.execute('INSERT INTO message_comments(message_id, user_id, text) VALUES (?, ?, ?)',
-               (message_id, user['id'], text))
-    db.commit()
-    return redirect(url_for('messages_thread', other_id=other_id))
 
 @app.route('/post/<int:post_id>/comment/<int:comment_id>/delete', methods=('POST',))
 def delete_comment(post_id, comment_id):
@@ -246,73 +227,6 @@ def delete_comment(post_id, comment_id):
     flash('Comment deleted')
     return redirect(url_for('post_comments_page', post_id=post_id))
 
-# Share/download a single message as text file (GET)
-@app.route('/messages/share_message/<int:message_id>')
-def share_message_server(message_id):
-    user = current_user()
-    if not user:
-        flash('Login required')
-        return redirect(url_for('login'))
-    db = get_db()
-    row = db.execute('SELECT m.text, u.username, m.created_at FROM messages m JOIN users u ON u.id = m.sender_id WHERE m.id = ?', (message_id,)).fetchone()
-    if not row:
-        flash('Message not found')
-        return redirect(url_for('messages_index'))
-    text = f"[{row['created_at']}] {row['username']}: {row['text']}"
-    # Return as downloadable plain-text file
-    buf = io.BytesIO()
-    buf.write(text.encode('utf-8'))
-    buf.seek(0)
-    filename = f"message_{message_id}.txt"
-    return send_file(buf, as_attachment=True, download_name=filename, mimetype='text/plain')
-
-# Add comment to a message
-@app.route('/messages/<int:other_id>/comment/<int:message_id>', methods=('POST',))
-def add_comment(other_id, message_id):
-    user = current_user()
-    if not user:
-        return jsonify({'error': 'login required'}), 401
-    text = request.form.get('text','').strip()
-    if not text:
-        return jsonify({'error': 'empty'}), 400
-    db = get_db()
-    db.execute('INSERT INTO message_comments(message_id, user_id, text) VALUES (?, ?, ?)', (message_id, user['id'], text))
-    db.commit()
-    # return new count
-    row = db.execute('SELECT COUNT(*) as cnt FROM message_comments WHERE message_id = ?', (message_id,)).fetchone()
-    return jsonify({'success': True, 'count': row['cnt']})
-
-# Get comments for a message (JSON)
-@app.route('/messages/<int:other_id>/comments/<int:message_id>')
-def get_comments(other_id, message_id):
-    user = current_user()
-    if not user:
-        return jsonify({'error': 'login required'}), 401
-    db = get_db()
-    rows = db.execute('''
-      SELECT c.id, c.text, c.created_at, u.username
-      FROM message_comments c JOIN users u ON u.id = c.user_id
-      WHERE c.message_id = ?
-      ORDER BY c.created_at ASC
-    ''', (message_id,)).fetchall()
-    res = [{'id': r['id'], 'text': r['text'], 'created_at': r['created_at'], 'username': r['username']} for r in rows]
-    return jsonify(res)
-
-# Share: we already had export_conversation; if you want per-message share (download text snippet), add:
-@app.route('/messages/share_message/<int:message_id>')
-def share_message(message_id):
-    user = current_user()
-    if not user:
-        flash('Login required'); return redirect(url_for('login'))
-    db = get_db()
-    row = db.execute('SELECT m.text, u.username, m.created_at FROM messages m JOIN users u ON u.id = m.sender_id WHERE m.id = ?', (message_id,)).fetchone()
-    if not row:
-        flash('Message not found'); return redirect(url_for('messages_index'))
-    text = f"[{row['created_at']}] {row['username']}: {row['text']}"
-    from flask import Response
-    fname = f"message_{message_id}.txt"
-    return Response(text, mimetype='text/plain', headers={'Content-Disposition': f'attachment; filename={fname}'})
-
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, conditional=True)
@@ -335,6 +249,7 @@ def register():
         
         try:
             avatar_rel = generate_avatar(username)
+            # optional: if you want to store avatar path in DB, update users table with avatar column here
             # db.execute('UPDATE users SET avatar_path = ? WHERE username = ?', (avatar_rel, username))
             # db.commit()
         except Exception as e:
@@ -399,7 +314,6 @@ def messages_thread(other_id):
                        messages=msgs,
                        other_pic_url=other_pic_url,
                        get_like_count=get_like_count,
-                       get_comment_count=get_comment_count,
                        get_comments_list=get_comments_list,
                        icon_url='/mnt/data/80e1a1d6-6d42-4c3d-846d-d420d5940577.png'   # your uploaded icon path
                        )

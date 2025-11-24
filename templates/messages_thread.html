@@ -46,6 +46,7 @@
 <body>
   <div class="chat-shell">
 
+    <!-- left column summary -->
     <div class="conversations-col">
       <div class="header-card">
         <span class="avatar-wrap" style="width:48px;height:48px;display:inline-block;"> 
@@ -69,6 +70,7 @@
       </div>
     </div>
 
+    <!-- main chat column -->
     <div class="chat-column" role="main">
       <div class="chat-topbar">
          <span class="avatar-wrap" style="width:42px;height:42px;display:inline-block;">
@@ -92,6 +94,7 @@
               {{ m.text | e }}
             </div>
 
+            <!-- Inline comments list (server-rendered) -->
             <div class="inline-comments">
               {% for c in get_comments_list(m.id) %}
                 <div class="inline-comment">
@@ -104,6 +107,7 @@
         {% endfor %}
       </div>
 
+      <!-- Standard form POST (no AJAX/fetch) -->
       <form id="sendForm" class="composer" method="post" action="{{ url_for('messages_thread', other_id=other.id) }}">
         <textarea name="text" id="msgtext" placeholder="Message {{ other.username }}..." required></textarea>
         <button type="submit">Send</button>

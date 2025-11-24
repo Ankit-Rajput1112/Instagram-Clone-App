@@ -135,7 +135,7 @@
     <!-- Sidebar Section -->
     <aside class="sidebar">
       <div class="profile">
-        
+        <!-- FIXED: use logged-in user (if any) instead of p.username (p is only defined in loop) -->
         <span class="avatar-wrap" style="width:56px;height:56px;margin-right:10px;display:inline-block;">
           <img src="{% if user %}{{ url_for('uploaded_file', filename='avatars/' ~ user.username ~ '.png') }}{% else %}{{ url_for('static', filename='default_profile.png') }}{% endif %}"
                  alt="{{ user.username if user else 'Guest' }}"
@@ -156,7 +156,7 @@
   </main>
 
   <script>
-    
+    // like button: send POST to /like/<id>
     document.addEventListener('click', function(e){
       if(e.target && e.target.classList.contains('like-btn')){
         const id = e.target.dataset.post;

@@ -70,10 +70,7 @@
         <div style="color:#666;padding:8px;">No comments yet. Be the first!</div>
       {% endif %}
 
-    
-
-
-      
+      <!-- Add comment form (server POST) -->
       <div style="margin-top:12px;">
         {% if user %}
           <form method="post" action="{{ url_for('post_comments_page', post_id=post.id) }}">

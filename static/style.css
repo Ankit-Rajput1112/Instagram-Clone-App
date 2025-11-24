@@ -31,9 +31,9 @@ body { background: #fafafa; color: #262626; }
 
 /* Like button styles */
 .like-btn { background: white; border:1px solid #ddd; padding:6px; border-radius:6px; cursor:pointer; }
-.like-btn .heart { filter: none; }
-.like-btn.liked { background: #ffeef0; border-color:#ffccd5; }
-.like-btn.liked .heart { color: red; } 
+.like-btn .heart { filter: none; } /* default white heart (emoji looks colored, so we fake) */
+.like-btn.liked { background: #ffeef0; border-color:#ffccd5; } /* subtle pink bg */
+.like-btn.liked .heart { color: red; } /* show red heart */
 .like-count { margin-left:6px; margin-right:12px; font-weight:600; color:#333; }
 .comment-count { margin-left:6px; margin-right:12px; color:#666; }
 
@@ -44,15 +44,15 @@ body { background: #fafafa; color: #262626; }
   .followers-container { margin: 10px; }
 }
 
-/* INITIAL AVATAR */
+/* INITIAL AVATAR (letter inside circle) */
 .initial-avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px; 
+  width: 44px;       /* default size — override per-use with inline style if needed */
   height: 44px;
   border-radius: 50%;
-  background: #bdbdbd; 
+  background: #bdbdbd;    /* fallback bg; JS/CSS will keep it neutral */
   color: #ffffff;
   font-weight: 700;
   font-size: 18px;
@@ -62,10 +62,12 @@ body { background: #fafafa; color: #262626; }
   overflow: hidden;
 }
 
+/* smaller / bigger variants you can reuse */
 .initial-avatar.sm { width:36px; height:36px; font-size:14px; }
 .initial-avatar.md { width:42px; height:42px; font-size:16px; }
 .initial-avatar.lg { width:48px; height:48px; font-size:20px; }
 
+/* make img and fallback occupy same layout area */
 .avatar-wrap { display:inline-block; vertical-align:middle; }
 .avatar-wrap img { display:inline-block; width:100%; height:100%; object-fit:cover; border-radius:50%; }
 .avatar-wrap .initial-avatar { width:100%; height:100%; border-radius:50%; }

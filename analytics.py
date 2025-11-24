@@ -1,3 +1,4 @@
+# analytics.py - generate simple plots from the sqlite DB
 import sqlite3
 import matplotlib.pyplot as plt
 from datetime import datetime
